@@ -297,6 +297,8 @@ class Photobooth:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pin_button_right, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.pin_button_left, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        if self.pin_flash >= 0 :
+            GPIO.setup(self.pin_flash, GPIO.OUT)
         GPIO.add_event_detect(self.pin_button_right, GPIO.FALLING, callback=self.Button2pressed, bouncetime=500)
         GPIO.add_event_detect(self.pin_button_left, GPIO.FALLING, callback=self.Button1pressed, bouncetime=500)
 
@@ -497,6 +499,7 @@ class Photobooth:
                                                   self.config.get("Paths", "screen_path", fallback="Screens/"))
         self.pin_button_left = int(self.config.get("InOut", "pin_button_left", fallback="23"))
         self.pin_button_right = int(self.config.get("InOut", "pin_button_right", fallback="24"))
+        self.pin_flash = int(self.config.get("InOut", "pin_flash", fallback="-1"))
         self.photo_w = int(self.config.get("Resolution", "photo_w", fallback="3280"))
         self.photo_h = int(self.config.get("Resolution", "photo_h", fallback="2464"))
         self.screen_w = int(self.config.get("Resolution", "screen_w", fallback="1024"))
@@ -799,7 +802,11 @@ class Photobooth:
     # take a pciture
     def on_enter_TakePhoto(self):
         logging.debug("now on_enter_TakePhoto")
+        if self.pin_flash >= 0 :
+            GPIO.output(self.pin_flash, GPIO.HIGH)
         self.taking_photo(self.photonumber)
+        if self.pin_flash >= 0 :
+            GPIO.output(self.pin_flash, GPIO.LOW)
         self.to_ShowPhoto()
 
     def on_exit_TakePhoto(self):
